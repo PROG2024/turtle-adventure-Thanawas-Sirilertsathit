@@ -365,14 +365,47 @@ class AroundHomeEnemy(Enemy):
         self.__id = None
         self.x = self.game.home.x - 50
         self.y = self.game.home.y - 50
+        self.move_x = 0
+        self.move_y = 0
+        self.moving_x = True
+        self.moving_y = False
+        self.move_left = True
+        self.move_up = True
 
     def create(self):
-        self.__id = self.canvas.create_rectangle(0,0,0,0, fill = self.color)
+        self.__id = self.canvas.create_rectangle(self.x,self.y,self.x+self.size,self.y+self.size, fill = self.color)
 
     def update(self):
-        self.x += 1
-        self.y += 1
-        # Need to edit to make them move around home
+        if self.moving_x:
+            if self.move_left == False:
+                self.x += 3
+                self.move_x += 3
+                if self.move_x >= 100:
+                    self.moving_x = False
+                    self.moving_y = True
+                    self.move_left = True
+            else:
+                self.x -= 3
+                self.move_x -= 3
+                if self.move_x <= 0:
+                    self.moving_x = False
+                    self.moving_y = True
+                    self.move_left = False
+        else:
+            if self.move_up == False:
+                self.y += 3
+                self.move_y += 3
+                if self.move_y >= 100:
+                    self.moving_y = False
+                    self.moving_x = True
+                    self.move_up = True
+            else:
+                self.y -= 3
+                self.move_y -= 3
+                if self.move_y <= 0:
+                    self.moving_y = False
+                    self.moving_x = True    
+                    self.move_up = False        
         if self.hits_player():
             self.game.game_over_lose()
 
@@ -433,7 +466,7 @@ class DiagonalMinionEnemy(Enemy):
                  ):
         super().__init__(game, size, color)
         self.__id = None
-        self.speed = 1
+        self.speed = 2
         self.summoner = summoner
         self.choosing1 = random.choice(["Up","Down"])
         self.choosing2 = random.choice(["Right","Left"])
@@ -442,7 +475,7 @@ class DiagonalMinionEnemy(Enemy):
         self.__id = self.canvas.create_rectangle(self.x-self.size/2,self.y-self.size/2,self.x+self.size/2,self.y+self.size/2, fill = self.color)
 
     def update(self):
-        self.speed += 0.2
+        self.speed += 0.4
         if self.choosing1 == "Up":
             self.y += self.speed
         else:
@@ -481,7 +514,7 @@ class StraightMinionEnemy(Enemy):
                  ):
         super().__init__(game, size, color)
         self.__id = None
-        self.speed = 1
+        self.speed = 2
         self.summoner = summoner
         self.choosing = random.choice(["Up","Down","Right","Left"])
 
@@ -489,7 +522,7 @@ class StraightMinionEnemy(Enemy):
         self.__id = self.canvas.create_rectangle(self.x-self.size/2,self.y-self.size/2,self.x+self.size/2,self.y+self.size/2, fill = self.color)
 
     def update(self):
-        self.speed += 0.2
+        self.speed += 0.4
         if self.choosing == "Right":
             self.x += math.floor(self.speed)
         elif self.choosing == "Left":
@@ -562,8 +595,8 @@ class EnemyGenerator:
         new_enemy_p.y = random.randint(0,400)
         self.game.add_element(new_enemy_p)
         new_enemy_a = AroundHomeEnemy(self.__game, 25, "blue")
-        new_enemy_a.x = random.randint(200,800)
-        new_enemy_a.y = random.randint(0,400)
+        new_enemy_a.x = self.__game.home.x - 50
+        new_enemy_a.y = self.__game.home.y - 50
         self.game.add_element(new_enemy_a)            
         new_enemy_s = SummonEnemy(self.__game, 35, "green")
         new_enemy_s.x = random.randint(200,800)
