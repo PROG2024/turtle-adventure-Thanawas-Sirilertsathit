@@ -255,7 +255,8 @@ class Enemy(TurtleGameElement):
 # Random walking Enemy walk randomly
 # Chasing Enemy pursuit the turtle
 # Fencing Enemy blocking around the home in a square movement
-# ??? Enemy design on my own
+# Summon Enemy shoot scatter shot when summon
+# Scatter bullets accelerate itself and bounce the wall
 class ShakingEnemy(Enemy):
     """
     Random movement and has acceleration
