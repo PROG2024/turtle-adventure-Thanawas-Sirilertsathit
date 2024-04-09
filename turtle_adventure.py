@@ -542,7 +542,44 @@ class StraightMinionEnemy(Enemy):
     def delete(self):
         pass
 
+class BossEnemy(Enemy):
+    """
+    Create scatter shot summoners that create scatter shot of minions around it
+    """
 
+    def __init__(self,
+                 game: "TurtleAdventureGame",
+                 size: int,
+                 color: str):
+        super().__init__(game, size, color)
+        self.__id = None
+        self.speed = 1
+
+    def create(self):
+        self.__id = self.canvas.create_rectangle(0,0,0,0, fill = self.color)
+
+    def update(self):
+        if self.x >= self.game.player.x:
+            self.x -= math.floor(self.speed)
+        elif self.x == self.game.player.x:
+            pass
+        else:
+            self.x += math.floor(self.speed)
+        if self.y >= self.game.player.y:
+            self.y -= math.floor(self.speed)
+        elif self.y == self.game.player.y:
+            pass
+        else:
+            self.y += math.floor(self.speed)
+        if self.hits_player():
+            self.game.game_over_lose()
+
+    def render(self):
+        self.canvas.coords(self.__id, self.x-self.size/2, self.y-self.size/2, self.x+self.size/2, self.y+self.size/2)
+
+    def delete(self):
+        pass
+    
 class EnemyGenerator:
     """
     An EnemyGenerator instance is responsible for creating enemies of various
@@ -586,23 +623,36 @@ class EnemyGenerator:
         new_enemy_a.x = self.__game.home.x - 50
         new_enemy_a.y = self.__game.home.y - 50
         self.game.add_element(new_enemy_a)            
-        new_enemy_s = SummonEnemy(self.__game, 35, "green")
+        new_enemy_s = SummonEnemy(self.__game, 20, "green")
         new_enemy_s.x = random.randint(200,800)
         new_enemy_s.y = random.randint(0,400)
         self.game.add_element(new_enemy_s)
-        for i in range(6):
-            self.create_summon(new_enemy_s.x, new_enemy_s.y, new_enemy_s)        
-        self.__game.after(math.ceil(10000/self.level), self.create_enemy)
+        new_enemy_b = BossEnemy(self.__game, 20, "orange")
+        new_enemy_b.x = random.randint(200,800)
+        new_enemy_b.y = random.randint(0,400)
+        self.game.add_element(new_enemy_b)
+        for i in range(math.ceil((self.level/3)+2)):
+            self.create_summon(new_enemy_s.x, new_enemy_s.y, new_enemy_s)
+        for i in range(math.ceil(self.level/3)+2):
+            self.create_boss(new_enemy_b.x, new_enemy_b.y, new_enemy_b)        
+        self.__game.after(math.ceil((10000/self.level)+1500), self.create_enemy)
 
     def create_summon(self,x,y, summoner):
         new_enemy_dm = DiagonalMinionEnemy(self.__game, 10, "pink", summoner)
         new_enemy_dm.x = random.randint(x-10,x+10)
         new_enemy_dm.y = random.randint(y-10,y+10)
         self.game.add_element(new_enemy_dm)
-        new_enemy_sm = StraightMinionEnemy(self.__game, 10, "pink", summoner)
+        # new_enemy_sm = StraightMinionEnemy(self.__game, 20, "pink", summoner)
+        # new_enemy_sm.x = random.randint(x-10,x+10)
+        # new_enemy_sm.y = random.randint(y-10,y+10)
+        # self.game.add_element(new_enemy_sm)
+    
+    def create_boss(self,x,y,boss):
+        new_enemy_sm = StraightMinionEnemy(self.__game, 10, "pink", boss)
         new_enemy_sm.x = random.randint(x-10,x+10)
         new_enemy_sm.y = random.randint(y-10,y+10)
         self.game.add_element(new_enemy_sm)
+
 
 class TurtleAdventureGame(Game): # pylint: disable=too-many-ancestors
     """
