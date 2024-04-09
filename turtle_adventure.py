@@ -592,7 +592,7 @@ class EnemyGenerator:
         self.game.add_element(new_enemy_s)
         for i in range(6):
             self.create_summon(new_enemy_s.x, new_enemy_s.y, new_enemy_s)        
-        self.__game.after(3000, self.create_enemy)
+        self.__game.after(math.ceil(10000/self.level), self.create_enemy)
 
     def create_summon(self,x,y, summoner):
         new_enemy_dm = DiagonalMinionEnemy(self.__game, 10, "pink", summoner)
