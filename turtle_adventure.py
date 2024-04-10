@@ -252,6 +252,7 @@ class Enemy(TurtleGameElement):
 # Scatter bullets accelerate itself and bounce the wall (unpredictable movement)
 # Trapper Enemy deploys traps periodically
 # Traps stay still but if turtle comes in and hit = die
+# Orbital Enemy which has orbitting enemies orbit around it in square movement
 class ShakingEnemy(Enemy):
     """
     Random movement and has acceleration
@@ -699,6 +700,95 @@ class TrapEnemy(Enemy):
     def delete(self):
         pass
     
+class OrbitalEnemy(Enemy):
+    """
+    Have object orbit around but stand still
+    """
+
+    def __init__(self,
+                 game: "TurtleAdventureGame",
+                 size: int,
+                 color: str,
+                 ):
+        super().__init__(game, size, color)
+        self.__id = None
+        self.speed = 2
+        self.choosing = random.choice(["Up","Down","Right","Left"])
+
+    def create(self):
+        self.__id = self.canvas.create_oval(self.x-self.size/2,self.y-self.size/2,self.x+self.size/2,self.y+self.size/2, fill = self.color)
+
+    def update(self):
+        if self.hits_player():
+            self.game.game_over_lose()
+
+    def render(self):
+        self.canvas.coords(self.__id, self.x-self.size/2, self.y-self.size/2, self.x+self.size/2, self.y+self.size/2)
+
+    def delete(self):
+        pass
+
+class OrbittingEnemy(Enemy):
+    """
+    Enemy that will orbit around orbital enemy
+    """
+
+    def __init__(self,
+                 game: "TurtleAdventureGame",
+                 size: int,
+                 color: str):
+        super().__init__(game, size, color)
+        self.__id = None
+        self.move_x = 0
+        self.move_y = 0
+        self.moving_x = True
+        self.moving_y = False
+        self.move_left = True
+        self.move_up = True
+
+    def create(self):
+        self.__id = self.canvas.create_oval(self.x,self.y,self.x+self.size,self.y+self.size, fill = self.color)
+
+    def update(self):
+        if self.moving_x:
+            if self.move_left == False:
+                self.x += 5
+                self.move_x += 5
+                if self.move_x >= 100:
+                    self.moving_x = False
+                    self.moving_y = True
+                    self.move_left = True
+            else:
+                self.x -= 5
+                self.move_x -= 5
+                if self.move_x <= 0:
+                    self.moving_x = False
+                    self.moving_y = True
+                    self.move_left = False
+        else:
+            if self.move_up == False:
+                self.y += 5
+                self.move_y += 5
+                if self.move_y >= 100:
+                    self.moving_y = False
+                    self.moving_x = True
+                    self.move_up = True
+            else:
+                self.y -= 5
+                self.move_y -= 5
+                if self.move_y <= 0:
+                    self.moving_y = False
+                    self.moving_x = True    
+                    self.move_up = False        
+        if self.hits_player():
+            self.game.game_over_lose()
+
+    def render(self):
+        self.canvas.coords(self.__id, self.x-self.size/2, self.y-self.size/2, self.x+self.size/2, self.y+self.size/2)
+
+    def delete(self):
+        pass
+    
 class EnemyGenerator:
     """
     An EnemyGenerator instance is responsible for creating enemies of various
@@ -757,14 +847,19 @@ class EnemyGenerator:
         new_enemy_t2 = Trapper2Enemy(self.__game, 30, "gold")
         new_enemy_t2.x = random.randint(200,800)
         new_enemy_t2.y = random.randint(0,400)
+        new_enemy_o = OrbitalEnemy(self.__game, 25, "indigo")
+        new_enemy_o.x = random.randint(200,800)
+        new_enemy_o.y = random.randint(0,400)
         self.game.add_element(new_enemy_t2)
+        self.game.add_element(new_enemy_o)
         for i in range(3):
             self.create_summon(new_enemy_s)
         for i in range(3):
             self.create_boss(new_enemy_b)
         self.create_trapper(new_enemy_t1)        
         self.create_trapper(new_enemy_t2)        
-        self.__game.after(math.ceil((10000/self.level)+1500), self.create_enemy)
+        self.create_orbital(new_enemy_o)        
+        self.__game.after(math.ceil((10000/self.level)+2000), self.create_enemy)
 
     def create_summon(self,summoner):
         new_enemy_dm = DiagonalMinionEnemy(self.__game, 10, "pink", summoner)
@@ -775,22 +870,30 @@ class EnemyGenerator:
         # new_enemy_sm.x = random.randint(x-10,x+10)
         # new_enemy_sm.y = random.randint(y-10,y+10)
         # self.game.add_element(new_enemy_sm)
-        self.__game.after(math.ceil(10000/self.level)+100, lambda: self.create_summon(summoner))
+        self.__game.after(math.ceil(10000/self.level)+500, lambda: self.create_summon(summoner))
     
     def create_boss(self,boss):
         new_enemy_sm = StraightMinionEnemy(self.__game, 10, "linen", boss)
         new_enemy_sm.x = random.randint(boss.x-10,boss.x+10)
         new_enemy_sm.y = random.randint(boss.y-10,boss.y+10)
         self.game.add_element(new_enemy_sm)
-        self.__game.after(math.ceil(10000/self.level)+100, lambda: self.create_boss(boss))
+        self.__game.after(math.ceil(10000/self.level)+500, lambda: self.create_boss(boss))
 
     def create_trapper(self,trapper):
         new_enemy_trap = TrapEnemy(self.__game, 20, "gray")
         new_enemy_trap.x = random.randint(trapper.x-5,trapper.x+5)
         new_enemy_trap.y = random.randint(trapper.y-5,trapper.y+5)
         self.game.add_element(new_enemy_trap)
-        self.__game.after(math.ceil(10000/self.level)+100, lambda: self.create_trapper(trapper))
+        self.__game.after(math.ceil(10000/self.level)+200, lambda: self.create_trapper(trapper))
         # self.__game.after(100, lambda: self.create_trapper(trapper))
+        # the comment part is actually hard mode
+
+    def create_orbital(self, orbital):
+        new_enemy_o = OrbittingEnemy(self.__game, 16, "crimson")
+        new_enemy_o.x = orbital.x-50
+        new_enemy_o.y = orbital.y-50
+        self.game.add_element(new_enemy_o)
+        self.__game.after(math.ceil(5000/self.level)+200, lambda: self.create_orbital(orbital)) 
 
 class TurtleAdventureGame(Game): # pylint: disable=too-many-ancestors
     """

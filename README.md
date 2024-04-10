@@ -47,8 +47,11 @@ You are required to implement at least _four_ types of enemies as follows:
 - `ChasingEnemy` - will try chasing the player. Try not to move
   this enemy too fast, otherwise the player will have no chance to win.
 - `FencingEnemy` - will walk around the home in a square-like pattern.
-- `ScatterEnemy` - this will shoot scatter shot when spawning.
+- `ScatterEnemy` - this will shoot scatter shot periodically.
 - `ScatterBullets` - this will accelerate itself and bounce the wall.
+- `TrapperEnemy` - this will deploy trap along its path.
+- `Trap` - this can kill the turtle.
+- `OrbitalEnemy` - this can summon orbitting enemies to orbit around itself.
 
 ## Submission
 
